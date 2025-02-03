@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CategoriesRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CategoriesRepository::class)]
@@ -19,9 +21,13 @@ class Categories
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
 
-    #[ORM\ManyToOne(inversedBy: 'category_id')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Ticket $ticket = null;
+    #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'category')]
+    private Collection $tickets;
+
+    public function __construct()
+    {
+        $this->tickets = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -52,14 +58,32 @@ class Categories
         return $this;
     }
 
-    public function getTicket(): ?Ticket
+    /**
+     * @return Collection<int, Ticket>
+     */
+    public function getTickets(): Collection
     {
-        return $this->ticket;
+        return $this->tickets;
     }
 
-    public function setTicket(?Ticket $ticket): static
+    public function addTicket(Ticket $ticket): static
     {
-        $this->ticket = $ticket;
+        if (!$this->tickets->contains($ticket)) {
+            $this->tickets->add($ticket);
+            $ticket->setCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTicket(Ticket $ticket): static
+    {
+        if ($this->tickets->removeElement($ticket)) {
+            // set the owning side to null (unless already changed)
+            if ($ticket->getCategory() === $this) {
+                $ticket->setCategory(null);
+            }
+        }
 
         return $this;
     }

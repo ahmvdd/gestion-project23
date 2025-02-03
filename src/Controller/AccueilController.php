@@ -9,11 +9,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
+
 
 class AccueilController extends AbstractController
 {
-    public function __construct(private EntityManagerInterface $entityManager)
-    {
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private Security $security
+    ) {
     }
 
     #[Route('/', name: 'app_accueil')]
@@ -24,10 +28,19 @@ class AccueilController extends AbstractController
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            // Récupérer l'utilisateur connecté
+            $user = $this->security->getUser();
+            
+            // Associer l'utilisateur au ticket
+            if ($user) {
+                $ticket->setCreatedBy($user);
+            }
+
             $this->entityManager->persist($ticket);
             $this->entityManager->flush();
 
-            // Redirect or display success message
+            $this->addFlash('success', 'Ticket créé avec succès.');
+            return $this->redirectToRoute('app_accueil');
         }
 
         return $this->render('accueil/index.html.twig', [
@@ -35,5 +48,4 @@ class AccueilController extends AbstractController
             'form' => $form->createView()
         ]);
     }
-
 }

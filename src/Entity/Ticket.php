@@ -3,9 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\TicketRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: TicketRepository::class)]
 class Ticket
@@ -15,135 +14,73 @@ class Ticket
     #[ORM\Column]
     private ?int $id = null;
 
-    /**
-     * @var Collection<int, user>
-     */
-    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'ticket')]
-    private Collection $created_by;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'createdTickets')]
+    #[ORM\JoinColumn(name: 'created_by', referencedColumnName: 'id')]
+    private ?User $created_by = null;
 
-    /**
-     * @var Collection<int, user>
-     */
-    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'ticket')]
-    private Collection $assigned_to;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'assignedTickets')]
+    #[ORM\JoinColumn(name: 'assigned_to', referencedColumnName: 'id', nullable: true)]
+    private ?User $assigned_to = null;
 
-    /**
-     * @var Collection<int, categories>
-     */
-    #[ORM\OneToMany(targetEntity: Categories::class, mappedBy: 'ticket')]
-    private Collection $category_id;
+    #[ORM\ManyToOne(targetEntity: Categories::class, inversedBy: 'tickets')]
+    #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'id', nullable: true)]
+    private ?Categories $category = null;
 
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: "text")]
     private ?string $description = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $status = null;
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $status = 'new';
 
-    #[ORM\Column]
+    #[ORM\Column(type: "datetime_immutable")]
+    #[Gedmo\Timestampable(on: "create")]
     private ?\DateTimeImmutable $created_at = null;
 
     public function __construct()
     {
-        $this->created_by = new ArrayCollection();
-        $this->assigned_to = new ArrayCollection();
-        $this->category_id = new ArrayCollection();
+        $this->created_at = new \DateTimeImmutable();
     }
+
+    // ... Le reste de vos méthodes reste inchangé ...
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return Collection<int, user>
-     */
-    public function getCreatedBy(): Collection
+    public function getCreatedBy(): ?User
     {
         return $this->created_by;
     }
 
-    public function addCreatedBy(user $createdBy): static
+    public function setCreatedBy(?User $created_by): self
     {
-        if (!$this->created_by->contains($createdBy)) {
-            $this->created_by->add($createdBy);
-            $createdBy->setTicket($this);
-        }
-
+        $this->created_by = $created_by;
         return $this;
     }
 
-    public function removeCreatedBy(user $createdBy): static
-    {
-        if ($this->created_by->removeElement($createdBy)) {
-            // set the owning side to null (unless already changed)
-            if ($createdBy->getTicket() === $this) {
-                $createdBy->setTicket(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, user>
-     */
-    public function getAssignedTo(): Collection
+    public function getAssignedTo(): ?User
     {
         return $this->assigned_to;
     }
 
-    public function addAssignedTo(user $assignedTo): static
+    public function setAssignedTo(?User $assigned_to): self
     {
-        if (!$this->assigned_to->contains($assignedTo)) {
-            $this->assigned_to->add($assignedTo);
-            $assignedTo->setTicket($this);
-        }
-
+        $this->assigned_to = $assigned_to;
         return $this;
     }
 
-    public function removeAssignedTo(user $assignedTo): static
+    public function getCategory(): ?Categories
     {
-        if ($this->assigned_to->removeElement($assignedTo)) {
-            // set the owning side to null (unless already changed)
-            if ($assignedTo->getTicket() === $this) {
-                $assignedTo->setTicket(null);
-            }
-        }
-
-        return $this;
+        return $this->category;
     }
 
-    /**
-     * @return Collection<int, categories>
-     */
-    public function getCategoryId(): Collection
+    public function setCategory(?Categories $category): self
     {
-        return $this->category_id;
-    }
-
-    public function addCategoryId(categories $categoryId): static
-    {
-        if (!$this->category_id->contains($categoryId)) {
-            $this->category_id->add($categoryId);
-            $categoryId->setTicket($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCategoryId(categories $categoryId): static
-    {
-        if ($this->category_id->removeElement($categoryId)) {
-            // set the owning side to null (unless already changed)
-            if ($categoryId->getTicket() === $this) {
-                $categoryId->setTicket(null);
-            }
-        }
-
+        $this->category = $category;
         return $this;
     }
 
@@ -152,10 +89,9 @@ class Ticket
         return $this->title;
     }
 
-    public function setTitle(string $title): static
+    public function setTitle(string $title): self
     {
         $this->title = $title;
-
         return $this;
     }
 
@@ -164,10 +100,9 @@ class Ticket
         return $this->description;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(string $description): self
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -176,10 +111,9 @@ class Ticket
         return $this->status;
     }
 
-    public function setStatus(string $status): static
+    public function setStatus(?string $status): self
     {
         $this->status = $status;
-
         return $this;
     }
 
@@ -188,10 +122,5 @@ class Ticket
         return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
-    {
-        $this->created_at = $created_at;
-
-        return $this;
-    }
+    // Nous ne définissons pas de setCreatedAt car il est géré automatiquement par Gedmo\Timestampable
 }

@@ -3,33 +3,30 @@
 {% block title %}Nouveau Ticket{% endblock %}
 
 {% block body %}
-    <h1>Créer un nouveau ticket</h1>
+    <div class="container mt-4">
+        {% if app.user %}
+            <h1 class="mb-4">Créer un nouveau ticket</h1>
 
-    {{ form_start(form) }}
-        <div class="form-group">
-            {{ form_label(form.title, 'Titre') }}
-            {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.title) }}
-        </div>
+            {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+            
+            <div class="mb-3">
+                {{ form_label(form.title, 'Titre', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.title) }}
+            </div>
 
-        <div class="form-group">
-            {{ form_label(form.description, 'Description') }}
-            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5}}) }}
-            {{ form_errors(form.description) }}
-        </div>
+            <div class="mb-3">
+                {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5}}) }}
+                {{ form_errors(form.description) }}
+            </div>
 
-        {# <div class="form-group">
-            {{ form_label(form.status, 'Statut') }}
-            {{ form_widget(form.status, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.status) }}
-        </div> #}
+            <button type="submit" class="btn btn-primary">Créer le ticket</button>
 
-        <div class="form-group">
-            {{ form_label(form.created_at, 'Date de création') }}
-            {{ form_widget(form.created_at, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.created_at) }}
-        </div>
-
-        <button type="submit" class="btn btn-primary">Créer le ticket</button>
-    {{ form_end(form) }}
+            {{ form_end(form) }}
+        {% else %}
+            <p>Vous devez être connecté pour créer un ticket.</p>
+            <a href="{{ path('app_login') }}" class="btn btn-primary">Connexion</a>
+        {% endif %}
+    </div>
 {% endblock %}

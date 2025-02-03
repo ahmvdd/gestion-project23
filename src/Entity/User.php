@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -19,18 +21,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
-    /**
-     * @var list<string> The user roles
-     */
     #[ORM\Column]
     private array $roles = [];
 
-    /**
-     * @var string The hashed password
-     */
     #[ORM\Column]
     private ?string $password = null;
 
@@ -40,8 +36,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
-    #[ORM\ManyToOne(inversedBy: 'created_by')]
-    private ?Ticket $ticket = null;
+    #[ORM\OneToMany(mappedBy: 'created_by', targetEntity: Ticket::class)]
+    private Collection $createdTickets;
+
+    #[ORM\OneToMany(mappedBy: 'assigned_to', targetEntity: Ticket::class)]
+    private Collection $assignedTickets;
+
+    public function __construct()
+    {
+        $this->createdTickets = new ArrayCollection();
+        $this->assignedTickets = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -56,7 +61,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -72,32 +76,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @see UserInterface
-     *
-     * @return list<string>
      */
     public function getRoles(): array
     {
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
-
         return array_unique($roles);
     }
 
-    /**
-     * @param list<string> $roles
-     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
-
         return $this;
     }
 
     /**
      * @see PasswordAuthenticatedUserInterface
      */
-    public function getPassword(): ?string
+    public function getPassword(): string
     {
         return $this->password;
     }
@@ -105,7 +102,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 
@@ -126,7 +122,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setName(string $name): static
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -138,19 +133,62 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPrenom(string $prenom): static
     {
         $this->prenom = $prenom;
-
         return $this;
     }
 
-    public function getTicket(): ?Ticket
+    /**
+     * @return Collection<int, Ticket>
+     */
+    public function getCreatedTickets(): Collection
     {
-        return $this->ticket;
+        return $this->createdTickets;
     }
 
-    public function setTicket(?Ticket $ticket): static
+    public function addCreatedTicket(Ticket $ticket): static
     {
-        $this->ticket = $ticket;
+        if (!$this->createdTickets->contains($ticket)) {
+            $this->createdTickets->add($ticket);
+            $ticket->setCreatedBy($this);
+        }
+        return $this;
+    }
 
+    public function removeCreatedTicket(Ticket $ticket): static
+    {
+        if ($this->createdTickets->removeElement($ticket)) {
+            // set the owning side to null (unless already changed)
+            if ($ticket->getCreatedBy() === $this) {
+                $ticket->setCreatedBy(null);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Ticket>
+     */
+    public function getAssignedTickets(): Collection
+    {
+        return $this->assignedTickets;
+    }
+
+    public function addAssignedTicket(Ticket $ticket): static
+    {
+        if (!$this->assignedTickets->contains($ticket)) {
+            $this->assignedTickets->add($ticket);
+            $ticket->setAssignedTo($this);
+        }
+        return $this;
+    }
+
+    public function removeAssignedTicket(Ticket $ticket): static
+    {
+        if ($this->assignedTickets->removeElement($ticket)) {
+            // set the owning side to null (unless already changed)
+            if ($ticket->getAssignedTo() === $this) {
+                $ticket->setAssignedTo(null);
+            }
+        }
         return $this;
     }
 }
