@@ -1,32 +1,90 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Nouveau Ticket{% endblock %}
+{% block title %}Gestion des Tickets{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* ... (vos styles existants) ... */
+</style>
+{% endblock %}
 
 {% block body %}
-    <div class="container mt-4">
+    <div class="container">
         {% if app.user %}
-            <h1 class="mb-4">Créer un nouveau ticket</h1>
-
-            {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+            <div class="header">
+                <h1>Gestion des Tickets</h1>
+                <a href="{{ path('app_logout') }}" class="logout-link">Déconnexion</a>
+            </div>
             
-            <div class="mb-3">
-                {{ form_label(form.title, 'Titre', {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.title) }}
-            </div>
+            {% if 'ROLE_ADMIN' in app.user.roles %}
+                {# Contenu pour les administrateurs #}
+                <div class="card">
+                    <h2>Panel d'administration</h2>
+                    <p>Bienvenue dans le panel d'administration.</p>
+                    <div class="card">
+                    <h1>traiter les ticket</h1>
+                    
+                    </div>
+                    
+                </div>
+                    
+                    {# Ajoutez ici le contenu spécifique aux administrateurs #}
+                </div>
+            {% else %}
+                {# Contenu pour les utilisateurs normaux #}
+                <div class="card">
+                    <h1>Créer un nouveau ticket</h1>
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                    <div class="mb-3">
+                        {{ form_label(form.title, 'Titre', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.title) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5}}) }}
+                        {{ form_errors(form.description) }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Créer le ticket</button>
+                    {{ form_end(form) }}
+                </div>
 
-            <div class="mb-3">
-                {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5}}) }}
-                {{ form_errors(form.description) }}
-            </div>
-
-            <button type="submit" class="btn btn-primary">Créer le ticket</button>
-
-            {{ form_end(form) }}
+                <div class="card">
+                    <h2>Mes tickets</h2>
+                    <div class="ticket-type">Tickets créés</div>
+                    <div class="ticket-list">
+                        {% if app.user.createdTickets is not empty %}
+                            {% for ticket in app.user.createdTickets %}
+                                <div class="ticket-item">
+                                    <div class="ticket-title">{{ ticket.title }}</div>
+                                    <div class="ticket-description">{{ ticket.description }}</div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>Vous n'avez pas encore créé de tickets.</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="ticket-type mt-4">Historique des Tickets</div>
+                    <div class="ticket-list">
+                        {% if app.user.assignedTickets is not empty %}
+                            {% for ticket in app.user.assignedTickets %}
+                                <div class="ticket-item">
+                                    <div class="ticket-title">{{ ticket.title }}</div>
+                                    <div class="ticket-description">{{ ticket.description }}</div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>Aucun ticket n'est accepté pour le moment.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
         {% else %}
-            <p>Vous devez être connecté pour créer un ticket.</p>
-            <a href="{{ path('app_login') }}" class="btn btn-primary">Connexion</a>
+            <div class="card">
+                <p>Vous devez être connecté pour accéder à cette page.</p>
+                <a href="{{ path('app_login') }}" class="btn btn-primary">Connexion</a>
+            </div>
         {% endif %}
     </div>
 {% endblock %}

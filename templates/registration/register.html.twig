@@ -1,20 +1,160 @@
-{{ form_errors(registrationForm) }}
+{% extends 'base.html.twig' %}
 
-{{ form_start(registrationForm) }}
-    {{ form_row(registrationForm.email) }}
-    {{ form_row(registrationForm.name, {
-        label: 'Nom'
-    }) }}
-    {{ form_row(registrationForm.prenom, {
-        label: 'Prénom'
-    }) }}
-    {{ form_row(registrationForm.roles, {
-        label: 'Rôles'
-    }) }}
-    {{ form_row(registrationForm.plainPassword, {
-        label: 'Mot de passe'
-    }) }}
-    {{ form_row(registrationForm.agreeTerms) }}
+{% block title %}Inscription{% endblock %}
 
-    <button type="submit" class="btn">Register</button>
-{{ form_end(registrationForm) }}
+{% block stylesheets %}
+     <style>
+        body {
+            background-color: #f4f7fa;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;  
+            /* overflow: hidden; Empêche le défilement de la page */
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            height: 100%;  /* S'assure que la carte prend toute la hauteur */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Cela permet de distribuer le contenu à travers la page */
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+
+        input[type="email"],
+        input[type="text"],
+        input[type="password"],
+        input[type="checkbox"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="text"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        button[type="submit"] {
+            background-color: #3498db;
+            color: #fff;
+            padding: 12px 0;
+            width: 100%;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+
+        .alert {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Assurer qu'il n'y a pas de débordement du formulaire */
+        form {
+            flex-grow: 1; /* Permet au formulaire de s'étendre pour occuper l'espace disponible */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Sépare le contenu pour ne pas avoir besoin de scroll */
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h1>Créez votre compte</h1>
+    {{ form_errors(registrationForm) }}
+
+    {{ form_start(registrationForm) }}
+        <div class="form-group">
+            {{ form_label(registrationForm.email, 'Adresse e-mail') }}
+            {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control', 'placeholder': 'Entrez votre adresse e-mail'}}) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(registrationForm.name, 'Nom') }}
+            {{ form_widget(registrationForm.name, {'attr': {'class': 'form-control', 'placeholder': 'Entrez votre nom'}}) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(registrationForm.prenom, 'Prénom') }}
+            {{ form_widget(registrationForm.prenom, {'attr': {'class': 'form-control', 'placeholder': 'Entrez votre prénom'}}) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(registrationForm.plainPassword, 'Mot de passe') }}
+            {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control', 'placeholder': 'Choisissez un mot de passe sécurisé'}}) }}
+        </div>
+
+        <div class="form-check">
+            {{ form_widget(registrationForm.agreeTerms) }}
+            {{ form_label(registrationForm.agreeTerms, 'J\'accepte les conditions d\'utilisation', {'label_attr': {'class': 'form-check-label'}}) }}
+        </div>
+
+        <button type="submit" class="btn">Créer mon compte</button>
+        {{ form_errors(registrationForm) }}
+
+    <div class="login-link">
+        <p>Vous avez déjà un compte ? <a href="{{ path('app_login') }}">Connectez-vous ici</a></p>
+    </div>
+    {{ form_end(registrationForm) }}
+</div>
+{% endblock %}
