@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Ticket;
 use App\Form\FormTicketType;
+use App\Repository\TicketRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,12 +12,12 @@ use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 
-
 class AccueilController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private Security $security
+        private Security $security,
+        private TicketRepository $ticketRepository
     ) {
     }
 
@@ -43,9 +44,17 @@ class AccueilController extends AbstractController
             return $this->redirectToRoute('app_accueil');
         }
 
+        $user = $this->security->getUser();
+        $allTickets = null;
+
+        if ($user && $this->security->isGranted('ROLE_ADMIN')) {
+            $allTickets = $this->ticketRepository->findAll();
+        }
+
         return $this->render('accueil/index.html.twig', [
             'controller_name' => 'AccueilController',
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'tickets' => $allTickets
         ]);
     }
 }

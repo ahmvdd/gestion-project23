@@ -4,31 +4,250 @@
 
 {% block stylesheets %}
 <style>
-    /* ... (vos styles existants) ... */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    background-color: #123524;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+    margin-bottom: 30px;
+    border-radius: 8px;
+}
+
+.header h1 {
+    font-size: 2.5em;
+        font-family:Lato, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+}
+
+.admin-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.admin-header {
+    background-color: #123524;
+    color: white;
+    padding: 20px;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 20px;
+}
+
+.admin-header h2 {
+    font-size: 1.8em;
+    margin: 0;
+    font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+}
+
+.admin-ticket-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: white;
+}
+
+.admin-ticket-table th, .admin-ticket-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.admin-ticket-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    color: #333;
+}
+
+.admin-ticket-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.btn-action {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 2px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.btn-view {
+    background-color: #3498db;
+    color: white;
+}
+
+.btn-view:hover {
+    background-color: #2980b9;
+}
+
+.btn-edit {
+    background-color: #f39c12;
+    color: white;
+}
+
+.btn-edit:hover {
+    background-color: #e67e22;
+}
+
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.card h1, .card h2 {
+    color: #578E7E;
+    margin-bottom: 20px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.btn-primary {
+    background-color: #578E7E;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #466f62;
+}
+
+.ticket-type {
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #578E7E;
+}
+
+.ticket-list {
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.ticket-item {
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.ticket-title {
+    font-weight: bold;
+    color: #333;
+}
+
+.ticket-description {
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+.logout-link {
+    display: inline-block;
+    margin-top: 20px;
+    color: #578E7E;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.logout-link:hover {
+    text-decoration: underline;
+}
 </style>
+
 {% endblock %}
 
 {% block body %}
     <div class="container">
         {% if app.user %}
             <div class="header">
-                <h1>Gestion des Tickets</h1>
-                <a href="{{ path('app_logout') }}" class="logout-link">Déconnexion</a>
+                <h1>Bonjour !!</h1>
+               
             </div>
             
             {% if 'ROLE_ADMIN' in app.user.roles %}
-                {# Contenu pour les administrateurs #}
-                <div class="card">
-                    <h2>Panel d'administration</h2>
-                    <p>Bienvenue dans le panel d'administration.</p>
-                    <div class="card">
-                    <h1>traiter les ticket</h1>
-                    
+    <div class="admin-container">
+        <div class="admin-header">
+            <h2>Panel d'administration</h2>
+        </div>
+        {% if tickets is defined and tickets is not empty %}
+            <div style="overflow-x: auto;">
+                <table class="admin-ticket-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Titre</th>
+                            <th>Description</th>
+                            <th>Statut</th>
+                            <th>Créé le</th>
+                            <th>Créé par</th>
+                            <th>Assigné à</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in tickets %}
+                            <tr>
+                                <td>{{ ticket.id }}</td>
+                                <td>{{ ticket.title }}</td>
+                                <td>{{ ticket.description|slice(0, 30) }}...</td>
+                                <td>{{ ticket.status ?? 'Non défini' }}</td>
+                                <td>{{ ticket.createdAt ? ticket.createdAt|date('Y-m-d') : 'Non défini' }}</td>
+                                <td>{{ ticket.createdBy ? (ticket.createdBy.name ~ ' ' ~ ticket.createdBy.prenom) : 'Inconnu' }}</td>
+                                <td>{{ ticket.assignedTo ? (ticket.assignedTo.name ~ ' ' ~ ticket.assignedTo.prenom) : 'Non assigné' }}</td>
+                                <td>
+                                    <a href="#" class="btn-action btn-view">Voir</a>
+                                    <a href="#" class="btn-action btn-edit">Éditer</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Aucun ticket n'a été créé pour le moment.</p>
+        {% endif %}
+    </div>
                     </div>
-                    
-                </div>
-                    
-                    {# Ajoutez ici le contenu spécifique aux administrateurs #}
                 </div>
             {% else %}
                 {# Contenu pour les utilisateurs normaux #}
@@ -86,5 +305,6 @@
                 <a href="{{ path('app_login') }}" class="btn btn-primary">Connexion</a>
             </div>
         {% endif %}
+         <a href="{{ path('app_logout') }}" class="logout-link">Déconnexion</a>
     </div>
 {% endblock %}
