@@ -56,5 +56,44 @@ class AccueilController extends AbstractController
             'form' => $form->createView(),
             'tickets' => $allTickets
         ]);
+        
     }
+
+    #[Route('/ticket/{id}', name: 'app_ticket_view')]
+    public function view(Ticket $ticket): Response
+    {
+        if (!$this->security->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Accès refusé.');
+        }
+    
+        return $this->render('accueil/index.html.twig', [
+            'ticket' => $ticket,
+            'view_mode' => 'details'
+        ]);
+    }
+    
+    #[Route('/ticket/{id}/edit', name: 'app_ticket_edit')]
+    public function edit(Request $request, Ticket $ticket): Response
+    {
+        if (!$this->security->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Accès refusé.');
+        }
+    
+        $form = $this->createForm(FormTicketType::class, $ticket);
+        $form->handleRequest($request);
+    
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->flush();
+            return $this->json(['message' => 'Ticket modifié avec succès.']);
+        }
+    
+        return $this->render('accueil/index.html.twig', [
+            'form' => $form->createView(),
+            'ticket' => $ticket,
+            'view_mode' => 'edit'
+        ]);
+    }
+    
+
+    
 }

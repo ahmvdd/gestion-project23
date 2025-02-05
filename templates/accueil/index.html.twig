@@ -8,7 +8,6 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    
 }
 
 body {
@@ -35,8 +34,7 @@ body {
 
 .header h1 {
     font-size: 2.5em;
-        font-family:Lato, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-
+    font-family: Lato, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 .admin-container {
@@ -58,8 +56,7 @@ body {
 .admin-header h2 {
     font-size: 1.8em;
     margin: 0;
-    font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;
-
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .admin-ticket-table {
@@ -192,8 +189,55 @@ body {
 .logout-link:hover {
     text-decoration: underline;
 }
-</style>
 
+#dynamic-content {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-top: 20px;
+}
+
+#dynamic-content h2 {
+    color: #578E7E;
+    margin-bottom: 15px;
+}
+
+#dynamic-content form {
+    margin-top: 15px;
+}
+
+#dynamic-content .form-group {
+    margin-bottom: 15px;
+}
+
+#dynamic-content label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+#dynamic-content input[type="text"],
+#dynamic-content textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#dynamic-content button[type="submit"] {
+    background-color: #578E7E;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#dynamic-content button[type="submit"]:hover {
+    background-color: #466f62;
+}
+</style>
 {% endblock %}
 
 {% block body %}
@@ -201,7 +245,6 @@ body {
         {% if app.user %}
             <div class="header">
                 <h1>Bonjour !!</h1>
-               
             </div>
             
             {% if 'ROLE_ADMIN' in app.user.roles %}
@@ -209,6 +252,41 @@ body {
         <div class="admin-header">
             <h2>Panel d'administration</h2>
         </div>
+      <div id="dynamic-content">
+        {% if view_mode is defined %}
+            {% if view_mode == 'details' %}
+                <h2>Détails du ticket</h2>
+                <p><strong>ID:</strong> {{ ticket.id }}</p>
+                <p><strong>Titre:</strong> {{ ticket.title }}</p>
+                <p><strong>Description:</strong> {{ ticket.description }}</p>
+                <p><strong>Statut:</strong> {{ ticket.status ?? 'Non défini' }}</p>
+                <p><strong>Créé le:</strong> {{ ticket.createdAt ? ticket.createdAt|date('Y-m-d') : 'Non défini' }}</p>
+                <p><strong>Créé par:</strong> {{ ticket.createdBy ? (ticket.createdBy.name ~ ' ' ~ ticket.createdBy.prenom) : 'Inconnu' }}</p>
+                <p><strong>Assigné à:</strong> {{ ticket.assignedTo ? (ticket.assignedTo.name ~ ' ' ~ ticket.assignedTo.prenom) : 'Non assigné' }}</p>
+            {% elseif view_mode == 'edit' %}
+                <h2>Modifier le ticket</h2>
+                <p><strong>Nom:</strong> {{ ticket.createdBy ? (ticket.createdBy.name ~ ' ' ~ ticket.createdBy.prenom) : 'Inconnu' }}</p>
+                <p><strong>Titre:</strong> {{ ticket.title }}</p>
+                <p><strong>Description:</strong> {{ ticket.description }}</p>
+                
+                {{ form_start(form, {'attr': {'id': 'edit-form'}}) }}
+                    {{ form_label(form.status, 'Statut') }}
+                    {{ form_widget(form.status) }}
+                    {{ form_errors(form.status) }}
+                    <button type="submit">Enregistrer les modifications</button>
+                {{ form_end(form) }}
+            {% endif %}
+        {% endif %}
+
+
+
+        
+    </div>
+    
+        
+        {% block ticket_details %}{% endblock %}
+        {% block ticket_edit %}{% endblock %}
+        
         {% if tickets is defined and tickets is not empty %}
             <div style="overflow-x: auto;">
                 <table class="admin-ticket-table">
@@ -235,8 +313,8 @@ body {
                                 <td>{{ ticket.createdBy ? (ticket.createdBy.name ~ ' ' ~ ticket.createdBy.prenom) : 'Inconnu' }}</td>
                                 <td>{{ ticket.assignedTo ? (ticket.assignedTo.name ~ ' ' ~ ticket.assignedTo.prenom) : 'Non assigné' }}</td>
                                 <td>
-                                    <a href="#" class="btn-action btn-view">Voir</a>
-                                    <a href="#" class="btn-action btn-edit">Éditer</a>
+                                    <a href="{{ path('app_ticket_view', {'id': ticket.id}) }}" class="btn-action btn-view">Voir</a>
+                                    <a href="{{ path('app_ticket_edit', {'id': ticket.id}) }}" class="btn-action btn-edit">Éditer</a>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -247,10 +325,10 @@ body {
             <p>Aucun ticket n'a été créé pour le moment.</p>
         {% endif %}
     </div>
-                    </div>
-                </div>
-            {% else %}
-                {# Contenu pour les utilisateurs normaux #}
+{% else %}
+    {# Le reste du code pour les utilisateurs non-admin #}
+
+
                 <div class="card">
                     <h1>Créer un nouveau ticket</h1>
                     {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
@@ -305,6 +383,43 @@ body {
                 <a href="{{ path('app_login') }}" class="btn btn-primary">Connexion</a>
             </div>
         {% endif %}
-         <a href="{{ path('app_logout') }}" class="logout-link">Déconnexion</a>
+        <a href="{{ path('app_logout') }}" class="logout-link">Déconnexion</a>
     </div>
+
+<script>
+document.querySelectorAll('.btn-view, .btn-edit').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const url = this.getAttribute('href');
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const content = doc.querySelector('#dynamic-content').innerHTML;
+                document.querySelector('#dynamic-content').innerHTML = content;
+            });
+    });
+});
+
+document.addEventListener('submit', function(e) {
+    if (e.target.matches('#edit-form')) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        fetch(form.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            // Recharger la liste des tickets si nécessaire
+            location.reload(); // Ou utilisez une méthode plus sophistiquée pour mettre à jour la liste
+        });
+    }
+});
+</script>
+</script>
+
 {% endblock %}
